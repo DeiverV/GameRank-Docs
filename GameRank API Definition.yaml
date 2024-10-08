@@ -401,24 +401,9 @@ components:
     UserUpdateRequest:
       type: object
       properties:
-        name:
-          type: string
-          example: "Jhon Doe Doe"
         username:
           type: string
           example: "JhonDoe123"
-        email:
-          type: string
-          format: email
-          example: "jhonDoe@gmail.com"
-        password:
-          type: string
-          format: password
-          example: "JhonDoe123456*."
-        role:
-          type: string
-          example: "ADMIN"
-          description: Enum of existent roles
         image:
           type: string
           example: "https://gameScores/jhonDoeAvatar.webp"
