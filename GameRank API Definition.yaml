@@ -440,6 +440,9 @@ components:
           type: string
           format: email
           example: "jhonDoe@gmail.com"
+        game:
+          type: string
+          example: "Minecraft"
         highestScore:
           type: integer
           example: 152
@@ -466,6 +469,15 @@ components:
           type: string
           example: "ADMIN|PLAYER"
           description: Enum of existent roles
+        rank:
+          type: number
+          example: 2000
+        highScore:
+          type: number
+          example: 75
+        scores:
+          type: number
+          example: 65
         isBlocked:
           type: boolean
           example: false
