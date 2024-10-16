@@ -25,7 +25,7 @@ paths:
       summary: Create User
       tags:
         - Authentication
-      description: Creates an user with email, name, username and password
+      description: Creates an user with email, name, username and password, If success redirects to login and show success message
       operationId: register
       requestBody:
         required: true
@@ -34,7 +34,7 @@ paths:
             schema:
               $ref: "#/components/schemas/UserCreate"
       responses:
-        204:
+        201:
           description: User created successfully
         400:
           description: User Bad Request
@@ -80,7 +80,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse500"
-  /users/profile/{userid}:
+  /users/profile/{userId}:
     get:
       summary: Get detailed data of user
       tags:
@@ -89,7 +89,7 @@ paths:
       operationId: Users
       parameters:
         - in: path
-          name: userid
+          name: userId
           schema:
             type: string
           required: true
@@ -119,49 +119,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse500"
-  /users/scores/{userId}:
-    get:
-      summary: Get user
-      tags:
-        - Users
-      description: Get scores of user given uuid
-      operationId: getUserScores
-      parameters:
-        - in: path
-          name: userId
-          schema:
-            type: string
-          required: true
-          description: uuid of the user required
-      responses:
-        200:
-          description: User data
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  anyOf:
-                    - $ref: "#/components/schemas/ScoresResponse"
-        400:
-          description: User bad request
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse400"
-        401:
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse401"
-        500:
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse500"
-  /users/profile/{userId}:
     put:
       summary: Update user
       tags:
@@ -178,7 +135,7 @@ paths:
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
               $ref: "#/components/schemas/UserUpdateRequest"
       responses:
@@ -188,6 +145,66 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/UserDetails"
+        400:
+          description: User bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse400"
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse401"
+        403:
+          description: Not authorized to do the action
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse403"
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse500"            
+  /users/scores/{userId}:
+    get:
+      summary: Get user scores
+      tags:
+        - Users
+      description: Get scores of user given uuid
+      operationId: getUserScores
+      parameters:
+        - in: path
+          name: userId
+          schema:
+            type: string
+          required: true
+          description: uuid of the user required
+        - in: query
+          name: page
+          schema:
+            type: integer
+          description: The number of the current page of pagination
+          example: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+          description: The numbers of items to return
+          example: 10
+      responses:
+        200:
+          description: User data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  anyOf:
+                    - $ref: "#/components/schemas/ScoresResponse"
         400:
           description: User bad request
           content:
@@ -220,7 +237,7 @@ paths:
             schema:
               $ref: "#/components/schemas/CreateScoreBody"
       responses:
-        204:
+        201:
           description: Score created successfully
         401:
           description: Unauthorized
@@ -228,6 +245,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse401"
+        403:
+          description: Not authorized to create a score to a user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse403"
         500:
           description: Internal server error
           content:
@@ -241,6 +264,24 @@ paths:
         - Scores
       description: Get the list of best player in order of higher to lower scores
       operationId: getLeaderboard
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+          description: The number of the current page of pagination
+          example: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+          description: The numbers of items to return
+        - in: query
+          name: game
+          schema:
+            type: string
+          description: The game filter to show highest scores
+          example: 'Valorant'
       responses:
         200:
           description: List users with highest scores
@@ -286,6 +327,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse401"
+        403:
+          description: Not authorized to delete score of user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse403"
         500:
           description: Internal server error
           content:
@@ -294,11 +341,24 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse500"
   /users/admin:
     get:
-      summary: Get the list of all players
+      summary: Get the list of all players unless unactive players
       tags:
         - Users
       description: Get the list of all players
       operationId: getAllPlayers
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+          description: The number of the current page of pagination
+          example: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+          description: The numbers of items to return
+          example: 10
       responses:
         200:
           description: List of users with player role
@@ -315,35 +375,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse401"
-        500:
-          description: Internal server error
+        403:
+          description: Not authorized to get all users
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse500"
-  /users/admin/{userid}:
-    patch:
-      summary: Block or Unblock an User
-      tags:
-        - Users
-      description: Block or Unblock an User with his UUID
-      operationId: blockUser
-      parameters:
-        - in: path
-          name: userid
-          required: true
-          description: Uuid of user to be blocked
-          schema:
-            type: string
-      responses:
-        204:
-          description: User Blocked / Unblocked
-        401:
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse401"
+                $ref: "#/components/schemas/ErrorResponse403"
         500:
           description: Internal server error
           content:
@@ -373,6 +410,46 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse401"
+        403:
+          description: Not authorized to delete an user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse403"
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse500"
+    patch:
+      summary: Block or Unblock an User
+      tags:
+        - Users
+      description: Block or Unblock an User with his UUID
+      operationId: blockOrUnblockUser
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          description: Uuid of user to be blocked
+          schema:
+            type: string
+      responses:
+        204:
+          description: User Blocked / Unblocked
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse401"
+        403:
+          description: Not authorized to change status of user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse403"
         500:
           description: Internal server error
           content:
@@ -406,7 +483,7 @@ components:
           example: "JhonDoe123"
         image:
           type: string
-          example: "https://gameScores/jhonDoeAvatar.webp"
+          format: binary
     UserLoginRequest:
       type: object
       properties:
@@ -423,6 +500,7 @@ components:
       properties:
         token:
           type: string
+          description: Token with username, name, email, id
           example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
     UserSummary:
       type: object
@@ -526,6 +604,15 @@ components:
         statusCode:
           type: integer
           example: 401
+    ErrorResponse403:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Not authorized to this action"
+        statusCode:
+          type: integer
+          example: 403
     ErrorResponse409:
       type: object
       properties:
