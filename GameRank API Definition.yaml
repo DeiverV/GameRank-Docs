@@ -80,7 +80,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse500"
-  /users/profile/{userId}:
+  /users/profile/{username}:
     get:
       summary: Get detailed data of user
       tags:
@@ -89,11 +89,11 @@ paths:
       operationId: Users
       parameters:
         - in: path
-          name: userId
+          name: username
           schema:
             type: string
           required: true
-          description: uuid of the user required
+          description: username of the user required
       responses:
         200:
           description: User data
@@ -119,6 +119,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse500"
+  /users/profile/{userId}:
     put:
       summary: Update user
       tags:
@@ -131,7 +132,7 @@ paths:
           schema:
             type: integer
           required: true
-          description: uuid of the user to update
+          description: username of the user to update
       requestBody:
         required: true
         content:
@@ -168,8 +169,8 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse500"            
-  /users/scores/{userId}:
+                $ref: "#/components/schemas/ErrorResponse500"   
+  /users/scores/{username}:
     get:
       summary: Get user scores
       tags:
@@ -178,11 +179,11 @@ paths:
       operationId: getUserScores
       parameters:
         - in: path
-          name: userId
+          name: username
           schema:
             type: string
           required: true
-          description: uuid of the user required
+          description: username of the user required
         - in: query
           name: page
           schema:
