@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Game Score Manager API
-  version: 1.3.11
+  version: 1.3.12
   description: The Score Management System project is a full-stack web application that allows players to manage and display scores for an online video game. Players will be able to register on the platform, log in, and their scores will be automatically recorded when they play. The highest scores will be displayed in a global ranking. Administrators will be able to manage the scores and user content from an administration panel.
   contact:
     email: deiberveranodev@gmail.com
@@ -202,10 +202,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  anyOf:
-                    - $ref: "#/components/schemas/ScoresResponse"
+                $ref: "#/components/schemas/ScoresResponse"
         400:
           description: User bad request
           content:
@@ -224,13 +221,20 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse500"
-  /scores:
+  /scores/{userId}:
     post:
       summary: Create a score to an User
       tags:
         - Scores
       description: Create a score and relationates it to an User
       operationId: createAScore
+      parameters:
+        - in: path
+          name: userId
+          schema:
+            type: string
+          required: true
+          description: uuid of the user required
       requestBody:
         required: true
         content:
@@ -285,14 +289,46 @@ paths:
           example: 'Valorant'
       responses:
         200:
-          description: List users with highest scores
+          description: List users with highest scores ordered by highest score
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LeaderboardResponse"
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse401"
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse500"
+  /scores/games:
+    get:
+      summary: Get games registered
+      tags:
+        - Users
+      description: Get names of games with scores registered
+      operationId: getGames
+      responses:
+        200:
+          description: User data
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  anyOf:
-                    - $ref: "#/components/schemas/UserSummary"
+                  type: string
+                example: ["Mario", "Minecraft", "Valorant"]
+        400:
+          description: User bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse400"
         401:
           description: Unauthorized
           content:
@@ -366,10 +402,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  anyOf:
-                    - $ref: "#/components/schemas/UserDetails"
+                $ref: "#/components/schemas/AllUsersResponse"
         401:
           description: Unauthorized
           content:
@@ -525,6 +558,26 @@ components:
         highestScore:
           type: integer
           example: 152
+    LeaderboardResponse: 
+      type: object
+      properties:
+        page:
+          type: number
+          example: 1
+        limit:
+          type: integer
+          example: 20
+        totalCount:
+          type: number
+          example: 200
+        totalPages:
+          type: number
+          example: 5
+        data:
+          type: array
+          items:
+            anyOf:
+              - $ref: "#/components/schemas/UserSummary"
     UserDetails:
       type: object
       properties:
@@ -551,16 +604,13 @@ components:
         rank:
           type: number
           example: 2000
-        highScore:
+        highestScore:
           type: number
           example: 75
-        scores:
-          type: number
-          example: 65
         isBlocked:
           type: boolean
           example: false
-    ScoresResponse:
+    Score:
       type: object
       properties:
         id:
@@ -575,12 +625,49 @@ components:
         game::
           type: string
           example: "Mario Bros!"
+    ScoresResponse:
+      type: object
+      properties:
+        page:
+          type: number
+          example: 1
+        limit:
+          type: integer
+          example: 20
+        totalCount:
+          type: number
+          example: 200
+        totalPages:
+          type: number
+          example: 5
+        data:
+          type: array
+          items:
+            anyOf:
+              - $ref: "#/components/schemas/Score"
+    AllUsersResponse:
+      type: object
+      properties:
+        page:
+          type: number
+          example: 1
+        limit:
+          type: integer
+          example: 20
+        totalCount:
+          type: number
+          example: 200
+        totalPages:
+          type: number
+          example: 5
+        data:
+          type: array
+          items:
+            anyOf:
+              - $ref: "#/components/schemas/UserDetails"
     CreateScoreBody:
       type: object
       properties:
-        playerId:
-          type: string
-          example: "uuid"
         score::
           type: integer
           example: 20
